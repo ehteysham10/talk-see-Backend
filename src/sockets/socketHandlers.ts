@@ -52,12 +52,17 @@ export const setupSocketHandlers = (io: Server) => {
     socket.on('send_message', async (data: { roomId: string; content: string; type?: 'text'|'image'|'file'|'system' }) => {
       try {
         const { roomId, content, type = 'text' } = data;
+        if (!content || !roomId) {
+          socket.emit('message_error', { error: 'roomId and content are required' });
+          return;
+        }
         const message = await messageService.createMessage(roomId, userId, content, type);
         
-        // Broadcast to everyone in the room
+        // Broadcast to everyone in the room including the sender (web: sender always joins room first)
         io.to(roomId).emit('new_message', message);
-      } catch (error) {
+      } catch (error: any) {
         logger.error('Error sending socket message', error);
+        socket.emit('message_error', { error: error.message || 'Failed to send message' });
       }
     });
 

@@ -1,14 +1,15 @@
 import { ChatRoom } from '../models/ChatRoom.js';
+import { AppError } from '../utils/AppError.js';
 
 export const chatService = {
   createRoom: async (type: 'direct' | 'group', participants: string[], name?: string) => {
     if (participants.length < 2) {
-      throw new Error('A chat room requires at least 2 participants');
+      throw new AppError('A chat room requires at least 2 participants', 400);
     }
 
     if (type === 'direct') {
       if (participants.length > 2) {
-        throw new Error('Direct chat can only have 2 participants');
+        throw new AppError('Direct chat can only have 2 participants', 400);
       }
       
       const existingRoom = await ChatRoom.findOne({

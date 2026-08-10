@@ -16,6 +16,11 @@ export const createRoom = asyncHandler(async (req: AuthRequest, res: Response) =
     throw new Error('Please provide an array of participants');
   }
 
+  if (!type || !['direct', 'group'].includes(type)) {
+    res.status(400);
+    throw new Error('Please provide a valid room type: "direct" or "group"');
+  }
+
   // Ensure current user is in participants
   const allParticipants = Array.from(new Set([...participants, req.user._id.toString()]));
 
@@ -37,8 +42,26 @@ export const getMessages = asyncHandler(async (req: AuthRequest, res: Response) 
   const { roomId } = req.params;
   const rawLimit = parseInt(req.query.limit as string);
   const rawSkip = parseInt(req.query.skip as string);
-  const limit = Math.min(!isNaN(rawLimit) ? rawLimit : 50, 100); // max 100 messages
+  const limit = Math.min(!isNaN(rawLimit) ? rawLimit : 50, 100);
   const skip = !isNaN(rawSkip) ? rawSkip : 0;
+
+  if (!req.user) {
+    res.status(401);
+    throw new Error('Not authorized');
+  }
+
+  // Verify the requesting user is a participant of this room
+  const { ChatRoom } = await import('../models/ChatRoom.js');
+  const room = await ChatRoom.findById(roomId);
+  if (!room) {
+    res.status(404);
+    throw new Error('Chat room not found');
+  }
+  const isParticipant = room.participants.some(p => p.toString() === req.user!._id.toString());
+  if (!isParticipant) {
+    res.status(403);
+    throw new Error('You are not a participant of this room');
+  }
 
   const messages = await messageService.getMessages(roomId, limit, skip);
   res.status(200).json(messages);
