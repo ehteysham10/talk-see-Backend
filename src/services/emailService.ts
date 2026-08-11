@@ -11,6 +11,7 @@ const transporter = nodemailer.createTransport({
   host: env.SMTP_HOST || 'smtp.gmail.com',
   port: 465,
   secure: true,
+  family: 4, // Force IPv4 to fix Render ENETUNREACH IPv6 issue
   connectionTimeout: 10000,
   greetingTimeout: 10000,
   auth: {
