@@ -10,9 +10,9 @@ const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
 
 export const authService = {
   register: async (name: string, email: string, passwordPlain: string) => {
-    const userExists = await User.findOne({ $or: [{ email }, { name }] });
+    const userExists = await User.findOne({ email });
     if (userExists) {
-      throw new AppError('User already exists', 400);
+      throw new AppError('User with this email already exists', 400);
     }
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(passwordPlain, salt);
