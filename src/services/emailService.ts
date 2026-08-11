@@ -8,9 +8,11 @@ import { logger } from '../utils/logger.js';
 dns.setDefaultResultOrder('ipv4first');
 
 const transporter = nodemailer.createTransport({
-  host: env.SMTP_HOST,
-  port: env.SMTP_PORT,
-  secure: env.SMTP_PORT === 465,
+  host: env.SMTP_HOST || 'smtp.gmail.com',
+  port: 465,
+  secure: true,
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
   auth: {
     user: env.SMTP_USER,
     pass: env.SMTP_PASS,
