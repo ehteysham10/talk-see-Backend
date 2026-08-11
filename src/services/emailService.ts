@@ -1,6 +1,11 @@
 import nodemailer from 'nodemailer';
+import dns from 'dns';
 import { env } from '../config/env.js';
 import { logger } from '../utils/logger.js';
+
+// Node 18+ prefers IPv6 by default, which causes ENETUNREACH on environments without IPv6 (like Render).
+// This forces DNS resolution to prioritize IPv4.
+dns.setDefaultResultOrder('ipv4first');
 
 const transporter = nodemailer.createTransport({
   host: env.SMTP_HOST,
